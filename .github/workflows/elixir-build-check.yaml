@@ -1,0 +1,60 @@
+name: Elixir Build and Check
+on:
+  workflow_call:
+    inputs:
+      elixir-version:
+        required: true
+        type: string
+      erlang-version:
+        required: true
+        type: string
+      mix-env:
+        required: false
+        type: string
+        default: dev
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
+jobs:
+  dependencies:
+    name: Build and Cache Dependencies
+    runs-on: ${{ inputs.runs-on }}
+    outputs:
+      cache-key-suffix: ${{ steps.build-cache-deps.outputs.cache-key-suffix }}
+    steps:
+      - id: build-cache-deps
+        uses: rentpath/actions-services-elixir-deps@v1
+        with:
+          elixir-version: ${{ inputs.elixir-version }}
+          erlang-version: ${{ inputs.erlang-version }}
+          mix-env: ${{ inputs.mix-env }}
+  credo:
+    name: Credo
+    needs: [dependencies]
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: rentpath/actions-services-elixir-deps@v1
+        with:
+          elixir-version: ${{ inputs.elixir-version }}
+          erlang-version: ${{ inputs.erlang-version }}
+          mix-env: ${{ inputs.mix-env }}
+      - run: mix do compile --force, credo --strict
+  dialyzer:
+    name: Dialyzer
+    needs: [dependencies]
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: rentpath/actions-services-elixir-deps@v1
+        with:
+          elixir-version: ${{ inputs.elixir-version }}
+          erlang-version: ${{ inputs.erlang-version }}
+          mix-env: ${{ inputs.mix-env }}
+      - name: Cache PLT files
+        uses: actions/cache@v2
+        with:
+          key: cache-plt_${{ needs.dependencies.outputs.cache-key-suffix }}
+          path: |
+            _build/dev/*.plt
+            _build/dev/*.plt.hash
+      - run: mix do compile --force, dialyzer
