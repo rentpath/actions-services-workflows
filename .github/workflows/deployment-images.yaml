@@ -1,0 +1,110 @@
+name: Build and Push Deployment Images
+on:
+  workflow_call:
+    inputs:
+      build-information-path:
+        required: true
+        type: string
+      deployment-test-image-docker-file-path:
+        required: false
+        type: string
+        default: ''
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
+    secrets:
+      GHCR_USER_NAME:
+        required: true
+      GHCR_USER_PAT:
+        required: true
+
+jobs:
+  set-repository:
+    runs-on: ${{ inputs.runs-on }}
+    outputs:
+      repository: ${{ steps.set-repository.outputs.repository }}
+    steps:
+      - id: set-repository
+        run: |
+          repository=$(echo ${{ github.repository }} | cut -f2 -d/)
+          echo "::set-output name=repository::$repository"
+
+  set-version:
+    runs-on: ${{ inputs.runs-on }}
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - id: set-version
+        run: |
+          short_sha=$(echo ${{ github.sha }} | head -c 7)
+          date=$(date -u +%Y%m%d)
+          version=$date-${{ github.run_number }}-$short_sha
+          echo "::set-output name=version::$version"
+
+  set-release-comment:
+    needs: [set-repository, set-version]
+    runs-on: ${{ inputs.runs-on }}
+    outputs:
+      release-comment: ${{ steps.set-release-comment.outputs.release-comment }}
+    steps:
+      - id: set-release-comment
+        run: |
+          repo=${{ needs.set-repository.outputs.repository }}
+          text="ghcr.io/${{ github.repository }}:${{ needs.set-version.outputs.version }}"
+          link="https://github.com/orgs/rentpath/packages/container/package/${repo}"
+          comment="Docker Image: [$text]($link)"
+          echo "::set-output name=release-comment::$comment"
+
+  deployment-image:
+    name: Build and Push the Deployment Image
+    needs: [set-release-comment, set-version]
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set /ops/version Build Information
+        run: |
+          mkdir -p $(dirname ${{ inputs.build-information-path }})
+          echo "---" > ${{ inputs.build-information-path }}
+          echo "version: ${{ needs.set-version.outputs.version }}" >> ${{ inputs.build-information-path }}
+          echo "build_number: ${{ github.run_number }}" >> ${{ inputs.build-information-path }}
+          echo "git_commit: ${{ github.sha }}" >> ${{ inputs.build-information-path }}
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USER_NAME }}
+          password: ${{ secrets.GHCR_USER_PAT }}
+      - uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ needs.set-version.outputs.version }}
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.set-version.outputs.version }}
+          release_name: ${{ needs.set-version.outputs.version }}
+          body: '${{ needs.set-release-comment.outputs.release-comment }}'
+
+  deployment-test-image:
+    name: Build and Push the Deployment Test Image
+    if: inputs.deployment-test-image-docker-file-path != ''
+    needs: [set-version]
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USER_NAME }}
+          password: ${{ secrets.GHCR_USER_PAT }}
+      - uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ${{ inputs.deployment-test-image-docker-file-path }}
+          push: true
+          tags: ghcr.io/${{ github.repository }}_tests:${{ needs.set-version.outputs.version }}
