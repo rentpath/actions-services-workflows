@@ -1,0 +1,44 @@
+name: Ruby Build and Check
+on:
+  workflow_call:
+    inputs:
+      ruby-version:
+        required: false
+        type: string
+        default: default
+      bundler-env:
+        required: false
+        type: string
+        default: dev
+      rubocop-auto-correct:
+        required: false
+        type: string
+        default: ""
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
+jobs:
+  dependencies:
+    name: Build and Cache Dependencies
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: rentpath/actions-services-ruby-deps@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-env: ${{ inputs.bundler-env }}
+  rubocop:
+    name: Rubocop
+    needs: [dependencies]
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: rentpath/actions-services-ruby-deps@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-env: ${{ inputs.bundler-env }}
+      - run: bundle exec rubocop -D ${{ inputs.rubocop-auto-correct }}
+        shell: bash
+        env:
+          RACK_ENV: ${{ inputs.bundler-env }}
+          RAILS_ENV: ${{ inputs.bundler-env }}
+          APPLICATION_ENVIRONMENT: ${{ inputs.bundler-env }}
