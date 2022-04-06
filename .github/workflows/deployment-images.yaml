@@ -13,6 +13,13 @@ on:
         required: false
         type: string
         default: ubuntu-latest
+    outputs:
+      repository:
+        description: "The repository name"
+        value: ${{ jobs.set-repository.outputs.repository }}
+      version:
+        description: "The artifact version"
+        value: ${{ jobs.set-version.outputs.version }}
     secrets:
       GHCR_USER_NAME:
         required: true
