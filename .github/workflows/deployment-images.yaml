@@ -5,6 +5,18 @@ on:
       build-information-path:
         required: true
         type: string
+      docker-build-dir:
+        required: false
+        type: string
+        default: '.'
+      docker-build-file:
+        required: false
+        type: string
+        default: 'Dockerfile'
+      repository:
+        required: false
+        type: string
+        default: ''
       deployment-test-image-docker-file-path:
         required: false
         type: string
@@ -34,7 +46,7 @@ jobs:
     steps:
       - id: set-repository
         run: |
-          repository=$(echo ${{ github.repository }} | cut -f2 -d/)
+          repository=$([[ "${{ inputs.repository }}" != "" ]] && echo ${{ inputs.repository }} || echo ${{ github.repository }} | cut -f2 -d/)
           echo "::set-output name=repository::$repository"
 
   set-version:
@@ -84,7 +96,8 @@ jobs:
           password: ${{ secrets.GHCR_USER_PAT }}
       - uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ${{ inputs.docker-build-dir }}
+          file: ${{ inputs.docker-build-file }}
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ needs.set-version.outputs.version }}
       - name: Create GitHub Release
