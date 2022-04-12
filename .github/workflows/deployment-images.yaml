@@ -3,8 +3,9 @@ on:
   workflow_call:
     inputs:
       build-information-path:
-        required: true
+        required: false
         type: string
+        default: 'apps/web/priv/BUILD-INFO'
       docker-build-context:
         required: false
         type: string
