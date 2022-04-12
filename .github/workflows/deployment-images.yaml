@@ -9,7 +9,7 @@ on:
         required: false
         type: string
         default: '.'
-      deployment-image-docker-file-path,:
+      deployment-image-docker-file-path:
         required: false
         type: string
         default: 'Dockerfile'
