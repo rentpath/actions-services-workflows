@@ -27,10 +27,8 @@ on:
         default: ubuntu-latest
     outputs:
       deployment-image-name:
-        description: "The name of the deployment image"
         value: ${{ jobs.set-deployment-image-name.outputs.name }}
       version:
-        description: "The repository version"
         value: ${{ jobs.set-version.outputs.version }}
     secrets:
       GHCR_USER_NAME:
