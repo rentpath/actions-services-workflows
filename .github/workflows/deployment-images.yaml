@@ -106,6 +106,7 @@ jobs:
           tag_name: ${{ needs.set-version.outputs.version }}
           release_name: ${{ needs.set-version.outputs.version }}
           body: '${{ needs.set-release-comment.outputs.release-comment }}'
+          repo: ${{ needs.set-deployment-image-name.outputs.name }}
 
   deployment-test-image:
     name: Build and Push the Deployment Test Image
