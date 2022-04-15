@@ -99,6 +99,7 @@ jobs:
           push: true
           tags: ghcr.io/rentpath/${{ needs.set-deployment-image-name.outputs.name }}:${{ needs.set-version.outputs.version }}
       - name: Create GitHub Release
+        if: github.repository == 'rentpath/${{ needs.set-deployment-image-name.outputs.name }}'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -106,7 +107,6 @@ jobs:
           tag_name: ${{ needs.set-version.outputs.version }}
           release_name: ${{ needs.set-version.outputs.version }}
           body: '${{ needs.set-release-comment.outputs.release-comment }}'
-          repo: ${{ needs.set-deployment-image-name.outputs.name }}
 
   deployment-test-image:
     name: Build and Push the Deployment Test Image
