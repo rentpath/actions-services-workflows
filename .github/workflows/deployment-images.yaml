@@ -98,6 +98,8 @@ jobs:
           file: ${{ inputs.deployment-image-docker-file-path }}
           push: true
           tags: ghcr.io/rentpath/${{ needs.set-deployment-image-name.outputs.name }}:${{ needs.set-version.outputs.version }}
+          secrets: |
+            "github_token=${{ secrets.GITHUB_TOKEN }}"
       - name: Create GitHub Release
         if: github.repository == format('rentpath/{0}', needs.set-deployment-image-name.outputs.name)
         uses: actions/create-release@v1
