@@ -79,6 +79,8 @@ jobs:
     runs-on: ${{ inputs.runs-on }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GHCR_USER_PAT }}
       - name: Set /ops/version Build Information
         run: |
           mkdir -p $(dirname ${{ inputs.build-information-path }})
@@ -99,7 +101,7 @@ jobs:
           push: true
           tags: ghcr.io/rentpath/${{ needs.set-deployment-image-name.outputs.name }}:${{ needs.set-version.outputs.version }}
           secrets: |
-            "github_token=${{ secrets.GITHUB_TOKEN }}"
+            "github_token=${{ secrets.GHCR_USER_PAT }}"
       - name: Create GitHub Release
         if: github.repository == format('rentpath/{0}', needs.set-deployment-image-name.outputs.name)
         uses: actions/create-release@v1
