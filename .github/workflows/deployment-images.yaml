@@ -83,11 +83,25 @@ jobs:
           token: ${{ secrets.GHCR_USER_PAT }}
       - name: Set /ops/version Build Information
         run: |
-          mkdir -p $(dirname ${{ inputs.build-information-path }})
-          echo "---" > ${{ inputs.build-information-path }}
-          echo "version: ${{ needs.set-version.outputs.version }}" >> ${{ inputs.build-information-path }}
-          echo "build_number: ${{ github.run_number }}" >> ${{ inputs.build-information-path }}
-          echo "git_commit: ${{ github.sha }}" >> ${{ inputs.build-information-path }}
+          build_info_path="${{ inputs.build-information-path }}"
+          mkdir -p $(dirname "$build_info_path")
+          if [[ "${build_info_path: -5}" == ".json" ]]; then
+              cat <<EOF > "$build_info_path"
+          {
+              "version": "${{ needs.set-version.outputs.version }}",
+              "build_number": "${{ github.run_number }}",
+              "git_commit": "${{ github.sha }}"
+          }
+          EOF
+          else
+              cat <<EOF > "$build_info_path"
+          ---
+          version: ${{ needs.set-version.outputs.version }}
+          build_number: ${{ github.run_number }}
+          git_commit: ${{ github.sha }}
+          EOF
+          fi
+
       - name: Login to GHCR
         uses: docker/login-action@v1
         with:
