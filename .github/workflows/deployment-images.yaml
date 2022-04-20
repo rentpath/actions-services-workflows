@@ -82,7 +82,8 @@ jobs:
       - name: Set /ops/version Build Information
         run: |
           mkdir -p $(dirname ${{ inputs.build-information-path }})
-          if [[ "${${{ inputs.build-information-path }}: -5}" == ".json" ]]; then
+          build_info_path="${{ inputs.build-information-path }}"
+          if [[ "${build_info_path: -5}" == ".json" ]]; then
               cat <<EOF > ${BUILD_INFORMATION_PATH}
           {
               "version": "${{ needs.set-version.outputs.version }}",
