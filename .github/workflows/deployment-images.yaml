@@ -5,6 +5,10 @@ on:
       build-information-path:
         required: true
         type: string
+      deployment-image-docker-build-args:
+        required: false
+        type: string
+        default: ''
       deployment-image-docker-build-context:
         required: false
         type: string
@@ -116,6 +120,7 @@ jobs:
           tags: ghcr.io/rentpath/${{ needs.set-deployment-image-name.outputs.name }}:${{ needs.set-version.outputs.version }}
           secrets: |
             "github_token=${{ secrets.GHCR_USER_PAT }}"
+          build-args: ${{ inputs.deployment-image-docker-build-args }}
       - name: Create GitHub Release
         if: github.repository == format('rentpath/{0}', needs.set-deployment-image-name.outputs.name)
         uses: actions/create-release@v1
