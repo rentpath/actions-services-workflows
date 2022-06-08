@@ -58,3 +58,21 @@ jobs:
             _build/dev/*.plt
             _build/dev/*.plt.hash
       - run: mix do compile --force, dialyzer
+  dependency_audit:
+    name: Dependency Audit
+    needs: [dependencies]
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: Check for unused dependencies
+        if: always()
+        run: mix deps.unlock --check-unused
+      - name: Check for deprecated packages
+        if: always()
+        run: mix hex.audit
+  xref:
+    name: Xref
+    needs: [dependencies]
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: Check for circular dependencies
+        run: mix xref graph --label compile-connected --fail-above 0
