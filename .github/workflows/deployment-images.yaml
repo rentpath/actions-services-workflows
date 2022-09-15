@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       build-information-path:
-        required: true
+        required: false
         type: string
       deployment-image-docker-build-context:
         required: false
