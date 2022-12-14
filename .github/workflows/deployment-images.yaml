@@ -46,7 +46,7 @@ jobs:
       - id: set-deployment-image-name
         run: |
           name=$([[ "${{ inputs.deployment-image-name }}" != "" ]] && echo ${{ inputs.deployment-image-name }} || echo ${{ github.repository }} | cut -f2 -d/)
-          echo "::set-output name=name::$name"
+          echo "name=$name" >> $GITHUB_OUTPUT
 
   set-version:
     runs-on: ${{ inputs.runs-on }}
@@ -58,7 +58,7 @@ jobs:
           short_sha=$(echo ${{ github.sha }} | head -c 7)
           date=$(date -u +%Y%m%d)
           version=$date-${{ github.run_number }}-$short_sha
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
 
   set-release-comment:
     needs: [set-deployment-image-name, set-version]
@@ -72,7 +72,7 @@ jobs:
           text="ghcr.io/${{ github.repository }}:${{ needs.set-version.outputs.version }}"
           link="https://github.com/orgs/rentpath/packages/container/package/${repo}"
           comment="Docker Image: [$text]($link)"
-          echo "::set-output name=release-comment::$comment"
+          echo "release-comment=$comment" >> $GITHUB_OUTPUT
 
   deployment-image:
     name: Build and Push the Deployment Image
@@ -104,12 +104,12 @@ jobs:
           fi
 
       - name: Login to GHCR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USER_NAME }}
           password: ${{ secrets.GHCR_USER_PAT }}
-      - uses: docker/build-push-action@v2
+      - uses: docker/build-push-action@v3
         with:
           context: ${{ inputs.deployment-image-docker-build-context }}
           file: ${{ inputs.deployment-image-docker-file-path }}
@@ -119,12 +119,11 @@ jobs:
             "github_token=${{ secrets.GHCR_USER_PAT }}"
       - name: Create GitHub Release
         if: github.repository == format('rentpath/{0}', needs.set-deployment-image-name.outputs.name)
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ needs.set-version.outputs.version }}
-          release_name: ${{ needs.set-version.outputs.version }}
           body: '${{ needs.set-release-comment.outputs.release-comment }}'
 
   deployment-test-image:
@@ -135,12 +134,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Login to GHCR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USER_NAME }}
           password: ${{ secrets.GHCR_USER_PAT }}
-      - uses: docker/build-push-action@v2
+      - uses: docker/build-push-action@v3
         with:
           context: .
           file: ${{ inputs.deployment-test-image-docker-file-path }}

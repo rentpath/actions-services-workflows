@@ -51,7 +51,7 @@ jobs:
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
       - name: Cache PLT files
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           key: cache-plt_${{ needs.dependencies.outputs.cache-key-suffix }}
           path: |
