@@ -86,3 +86,25 @@ jobs:
           mix-env: ${{ inputs.mix-env }}
       - name: Check for circular dependencies
         run: mix xref graph --label compile-connected --fail-above 0
+  format:
+    name: Validate Elixir source formatting complies with `mix format`
+    needs: [dependencies]
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: Fetch the full repository so we can perform a Git diff
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Fetch dependencies as they may be needed by the formatter
+        uses: rentpath/actions-services-elixir-deps@v1
+        with:
+          elixir-version: ${{ inputs.elixir-version }}
+          erlang-version: ${{ inputs.erlang-version }}
+          mix-env: ${{ inputs.mix-env }}
+          skip-checkout: 'true'
+      - name: Check formatting for Elixir files that have changed
+        run: |
+          default_branch_ref="origin/${{ github.event.repository.default_branch }}"
+          git diff --name-only "$default_branch_ref" | \
+          egrep '(\.ex|\.exs)+$' | \
+          xargs --no-run-if-empty mix format --check-formatted --dry-run
