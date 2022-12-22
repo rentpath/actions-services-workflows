@@ -87,7 +87,7 @@ jobs:
       - name: Check for circular dependencies
         run: mix xref graph --label compile-connected --fail-above 0
   format:
-    name: Validate Elixir source formatting complies with `mix format`
+    name: Mix Format
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
