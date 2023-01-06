@@ -29,6 +29,7 @@ jobs:
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
+          github-token: ${{ secrets.GHCR_USER_PAT }}
   credo:
     name: Credo
     needs: [dependencies]
@@ -39,6 +40,7 @@ jobs:
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
+          github-token: ${{ secrets.GHCR_USER_PAT }}
       - run: mix do compile --force, credo --strict
   dialyzer:
     name: Dialyzer
@@ -50,6 +52,7 @@ jobs:
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
+          github-token: ${{ secrets.GHCR_USER_PAT }}
       - name: Cache PLT files
         uses: actions/cache@v3
         with:
@@ -68,6 +71,7 @@ jobs:
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
+          github-token: ${{ secrets.GHCR_USER_PAT }}
       - name: Check for unused dependencies
         if: always()
         run: mix deps.unlock --check-unused

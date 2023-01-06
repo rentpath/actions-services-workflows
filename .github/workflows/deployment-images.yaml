@@ -117,6 +117,8 @@ jobs:
           tags: ghcr.io/rentpath/${{ needs.set-deployment-image-name.outputs.name }}:${{ needs.set-version.outputs.version }}
           secrets: |
             "github_token=${{ secrets.GHCR_USER_PAT }}"
+          build-args: |
+            "GHCR_USER_PAT=${{ secrets.GHCR_USER_PAT }}"
       - name: Create GitHub Release
         if: github.repository == format('rentpath/{0}', needs.set-deployment-image-name.outputs.name)
         uses: softprops/action-gh-release@v1
