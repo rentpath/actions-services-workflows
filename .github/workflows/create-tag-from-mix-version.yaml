@@ -1,0 +1,59 @@
+name: create-tag-from-mix-version
+on:
+  workflow_call:
+    inputs:
+      project-module-name:
+        required: true
+        type: string
+      elixir-version:
+        required: true
+        type: string
+      erlang-version:
+        required: true
+        type: string
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
+      author-username:
+        required: false
+        type: string
+        default: rentpath-workflow-bot
+      author-email:
+        required: false
+        type: string
+        default: rentpath-workflow-bot.idg.dx@rentpath.com
+jobs:
+  create-tag-from-mix-file:
+    name: Create Tag from Mix Version
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: Fetch the full repository so we can push tags
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: rentpath/actions-services-elixir-deps@v1
+        with:
+          elixir-version: ${{ inputs.elixir-version }}
+          erlang-version: ${{ inputs.erlang-version }}
+          skip-checkout: 'true'
+      - name: Configure Git
+        run: |
+          git config --global user.email "${{ inputs.author-email }}"
+          git config --global user.name "${{ inputs.author-username }}"
+      - name: Set Mix Version
+        id: set-mix-version
+        run: |
+          mix compile
+          version=$(mix eval 'IO.puts ${{ inputs.project-module-name }}.MixProject.project()[:version]');
+          echo "mix-version=$version" >> $GITHUB_OUTPUT
+      - name: Create New Tag
+        run: |
+          version=${{ steps.set-mix-version.outputs.mix-version }}
+          if [ $(git tag -l "$version") ]; then
+            echo "Tag $version already exists!"
+          else
+            echo "Creating tag: $version"
+            git tag -a $version --message="$version" && \
+            git push origin refs/tags/${version}:refs/tags/${version}
+          fi
