@@ -114,3 +114,8 @@ jobs:
           git diff --name-only "$default_branch_ref" | \
           egrep '(\.ex|\.exs)+$' | \
           xargs --no-run-if-empty mix format --check-formatted --dry-run
+  single-commit-check:
+    name: Check For Single Commit
+    uses: ./.github/workflows/commit-count-check.yaml
+    with:
+      max-count: 1

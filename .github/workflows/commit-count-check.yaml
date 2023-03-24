@@ -1,0 +1,23 @@
+name: commit-count-check
+on:
+  workflow_call:
+    inputs:
+      max-count:
+        required: false
+        type: number
+        default: 1
+jobs:
+  commit-check:
+    name: Commit Check
+    if: github.event.repository.default_branch == github.base_ref
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: |
+          count=$(git rev-list --count origin/${{ github.head_ref }} ^origin/${{ github.event.repository.default_branch }})
+          if [ $count -gt ${{ inputs.max-count }} ]; then
+            echo "Cannot merge $count commits into main. Only one commit is allowed."
+            exit 1
+          fi
