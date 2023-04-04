@@ -1,17 +1,18 @@
 name: Build
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+  workflow_call:
+    inputs:
+      on-branch:
+        required: true
+        type: string
+      runs-on:
+        required: false
+        type: string
+        default: self-hosted
 jobs:
   build:
     name: build
-    runs-on: self-hosted
+    runs-on: ${{ inputs.runs-on }}
     steps:
       - name: cancel prior runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -80,10 +81,6 @@ jobs:
       - name: auth with docker
         run: |
           echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
-
-      - name: fetch latest base runtime image
-        run: |
-          docker pull ghcr.io/rentpath/rp_clojure:openjre8u292
 
       - name: build release image
         run: |
