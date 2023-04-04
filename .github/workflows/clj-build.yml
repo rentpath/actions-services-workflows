@@ -104,7 +104,7 @@ jobs:
           fi
 
       - name: Add build tag check
-        uses: LouisBrunner/checks-action@v1.1.1
+        uses: LouisBrunner/checks-action@v1.2.1
         if: github.event.pull_request
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
