@@ -2,9 +2,6 @@ name: Build
 on:
   workflow_call:
     inputs:
-      on-branch:
-        required: true
-        type: string
       runs-on:
         required: false
         type: string
