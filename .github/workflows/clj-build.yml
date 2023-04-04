@@ -1,4 +1,4 @@
-name: Build
+name: Clojure Build
 on:
   workflow_call:
     inputs:
@@ -8,7 +8,7 @@ on:
         default: self-hosted
 jobs:
   build:
-    name: build
+    name: Build App
     runs-on: ${{ inputs.runs-on }}
     steps:
       - name: cancel prior runs
