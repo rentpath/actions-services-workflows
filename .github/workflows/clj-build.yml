@@ -102,7 +102,7 @@ jobs:
           docker push ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }}
           # reserve the `latest` tag for the target branch
           # branch-tags are essentially `latest` per branch
-          if [[ ${{ contains(github.ref, ${{ inputs.target_branch }}) }} = true ]]; then
+          if [[ ${{ contains(github.ref, inputs.target_branch) }} = true ]]; then
             docker tag ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }} ${{ steps.vars.outputs.image }}:latest
             docker push ${{ steps.vars.outputs.image }}:latest
           fi
