@@ -2,14 +2,18 @@ name: Clojure Build
 on:
   workflow_call:
     inputs:
-      runs-on:
+      runner:
         required: false
         type: string
         default: self-hosted
+      target_branch:
+        required: false
+        type: string
+        default: main
 jobs:
   build:
     name: Build App
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: cancel prior runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -96,9 +100,9 @@ jobs:
         run: |
           docker push ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}
           docker push ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }}
-          # reserve the `latest` tag for the main branch
+          # reserve the `latest` tag for the target branch
           # branch-tags are essentially `latest` per branch
-          if [[ ${{ contains(github.ref, 'main') }} = true ]]; then
+          if [[ ${{ contains(github.ref, ${{ inputs.target_branch }}) }} = true ]]; then
             docker tag ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }} ${{ steps.vars.outputs.image }}:latest
             docker push ${{ steps.vars.outputs.image }}:latest
           fi
@@ -113,7 +117,7 @@ jobs:
           conclusion: ${{ job.status }}
 
       - name: git tag
-        if: contains(github.ref, 'refs/heads/main')
+        if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
         shell: bash {0}
         run: |
           git config --global user.email "idg@rentpath.com"
@@ -122,7 +126,7 @@ jobs:
             git push origin refs/tags/${{ steps.vars.outputs.version }}:refs/tags/${{ steps.vars.outputs.version }}
 
       - name: release
-        if: contains(github.ref, 'refs/heads/main')
+        if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
         id: create_release
         uses: actions/create-release@v1
         env:
