@@ -18,6 +18,6 @@ jobs:
       - run: |
           count=$(git rev-list --count origin/${{ github.head_ref }} ^origin/${{ github.event.repository.default_branch }})
           if [ $count -gt ${{ inputs.commit-limit }} ]; then
-            echo "Cannot merge $count commits into ${{ github.base_ref }}. Only one commit is allowed."
+            echo "Cannot merge $count commits into ${{ github.base_ref }}. Only ${{ inputs.commit-limit }} commit(s) is allowed."
             exit 1
           fi
