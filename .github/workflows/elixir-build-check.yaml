@@ -118,4 +118,4 @@ jobs:
     name: Check For Single Commit
     uses: ./.github/workflows/commit-count-check.yaml
     with:
-      max-count: 1
+      commit-limit: 1
