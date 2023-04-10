@@ -100,7 +100,7 @@ jobs:
       - name: print artifacts to test
         shell: bash
         run: |
-          value=`cat package-id/package-id.txt`
+          value=`cat artifacts/package-id/package-id.txt`
           echo The package-id is $value
 
       - name: auth with docker
