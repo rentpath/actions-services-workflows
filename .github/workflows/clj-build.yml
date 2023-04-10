@@ -90,8 +90,7 @@ jobs:
             path: artifacts/${{ inputs.artifact_name }}
 
       - name: download multiple artifacts
-      - if: inputs.artifact_name != '""'
-          uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v3
 
       - name: auth with docker
         run: |
