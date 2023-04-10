@@ -83,7 +83,7 @@ jobs:
           echo "::set-output name=version::${VERSION}"
 
       - name: download artifacts
-        if: inputs.artifact_name != ""
+        if: inputs.artifact_name != '""'
         uses: actions/download-artifact@v3
         with:
             name: ${{ inputs.artifact_name }}
