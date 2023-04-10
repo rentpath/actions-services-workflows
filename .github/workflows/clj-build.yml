@@ -83,9 +83,11 @@ jobs:
           echo "::set-output name=version::${VERSION}"
 
       - name: download artifacts
+        if: inputs.artifact_name != ""
         uses: actions/download-artifact@v3
         with:
             name: ${{ inputs.artifact_name }}
+            path: artifacts/${{ inputs.artifact_name }}
 
       - name: auth with docker
         run: |
