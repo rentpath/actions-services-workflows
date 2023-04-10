@@ -89,6 +89,10 @@ jobs:
             name: ${{ inputs.artifact_name }}
             path: artifacts/${{ inputs.artifact_name }}
 
+      - name: download multiple artifacts
+      - if: inputs.artifact_name != '""'
+          uses: actions/download-artifact@v3
+
       - name: auth with docker
         run: |
           echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
