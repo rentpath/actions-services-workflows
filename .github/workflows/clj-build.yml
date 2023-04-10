@@ -4,6 +4,7 @@ on:
     inputs:
       artifact_name:
         required: false
+        type: string
       runner:
         required: false
         type: string
