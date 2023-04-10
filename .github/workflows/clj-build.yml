@@ -92,10 +92,15 @@ jobs:
       - name: download multiple artifacts
         uses: actions/download-artifact@v3
 
+      - name: list dir structure
+        shell: bash
+        run: ls -R
+
+
       - name: print artifacts to test
         shell: bash
         run: |
-          value=`cat package-id`
+          value=`cat package-id/package-id.txt`
           echo The package-id is $value
 
       - name: auth with docker
