@@ -2,6 +2,8 @@ name: Clojure Build
 on:
   workflow_call:
     inputs:
+      artifact_name:
+        required: false
       runner:
         required: false
         type: string
@@ -78,6 +80,11 @@ jobs:
           VERSION=$( date -u '+%Y%m%d' )-${{ github.run_number || 0 }}-$( git rev-parse --short HEAD )
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "::set-output name=version::${VERSION}"
+
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+            name: ${{ inputs.artifact_name }}
 
       - name: auth with docker
         run: |
