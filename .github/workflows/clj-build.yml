@@ -92,6 +92,12 @@ jobs:
       - name: download multiple artifacts
         uses: actions/download-artifact@v3
 
+      - name: print artifacts to test
+        shell: bash
+        run: |
+          value=`cat package-id`
+          echo The package-id is $value
+
       - name: auth with docker
         run: |
           echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
