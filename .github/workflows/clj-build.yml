@@ -2,9 +2,6 @@ name: Clojure Build
 on:
   workflow_call:
     inputs:
-      artifact_name:
-        required: false
-        type: string
       runner:
         required: false
         type: string
@@ -83,25 +80,11 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: download artifacts
-        if: inputs.artifact_name != '""'
-        uses: actions/download-artifact@v3
-        with:
-            name: ${{ inputs.artifact_name }}
-            path: artifacts/${{ inputs.artifact_name }}
-
-      - name: download multiple artifacts
         uses: actions/download-artifact@v3
 
       - name: list dir structure
         shell: bash
         run: ls -R
-
-
-      - name: print artifacts to test
-        shell: bash
-        run: |
-          value=`cat ./artifacts/package-id/package_id.txt`
-          echo The package-id is $value
 
       - name: auth with docker
         run: |
