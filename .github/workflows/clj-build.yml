@@ -29,7 +29,7 @@ jobs:
                "https://api.github.com/repos/${{ github.repository}}/issues/${{ github.event.pull_request.number }}/labels/PR%3A%20RE%20Ready"
 
       - name: check out most recent commit
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ github.token }}
@@ -131,12 +131,12 @@ jobs:
       - name: release
         if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: ${{ steps.vars.outputs.version }}
-          release_name: Release ${{ steps.vars.outputs.version }}
+          name: Release ${{ steps.vars.outputs.version }}
           body: 'Docker Image: [${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }}](https://github.com/orgs/rentpath/packages/container/package/${{ steps.vars.outputs.rawrepo }})'
           draft: false
           prerelease: false
