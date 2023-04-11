@@ -82,10 +82,6 @@ jobs:
       - name: download artifacts
         uses: actions/download-artifact@v3
 
-      - name: list dir structure
-        shell: bash
-        run: ls -R
-
       - name: auth with docker
         run: |
           echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
