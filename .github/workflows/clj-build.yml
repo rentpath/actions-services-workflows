@@ -17,7 +17,6 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-
     steps:
       - name: remove 'ready' label
         if: github.event.pull_request && github.event.pull_request.number
@@ -33,22 +32,13 @@ jobs:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ github.token }}
 
-      - name: set owner & repo env vars
-        id: owner_and_repo
-        run: |
-          OWNER=$( echo ${{ github.repository }} | sed -E -e 's/\/.+$//' )
-          echo "OWNER=$OWNER" >> $GITHUB_ENV
-          echo "owner=${OWNER}" >> $GITHUB_OUTPUT
-          REPO=$( echo ${{ github.repository }} | sed -E -e 's/^[^\/]+\///')
-          echo "REPO=$REPO" >> $GITHUB_ENV
-          echo "repo=${REPO}" >> $GITHUB_OUTPUT
-
       - name: set other variables
         id: vars
         run: |
-          # duplicating these so they're available via `steps.vars.*`
-          echo "owner=${{ steps.owner_and_repo.outputs.owner }}" >> $GITHUB_OUTPUT
-          echo "repo=${{ steps.owner_and_repo.outputs.repo }}" >> $GITHUB_OUTPUT        
+          OWNER=$( echo ${{ github.repository }} | sed -E -e 's/\/.+$//' )
+          echo "owner=${OWNER}" >> $GITHUB_OUTPUT
+          REPO=$( echo ${{ github.repository }} | sed -E -e 's/^[^\/]+\///')
+          echo "repo=${REPO}" >> $GITHUB_OUTPUT
           BRANCH_TAG=$(
             echo "${{ github.head_ref || github.ref }}" \
             | sed -E -e 's/refs\/heads\/(.*)/\1/g' \
@@ -57,25 +47,18 @@ jobs:
             | cut -c 1-32 \
             | sed -e 's/[^a-z0-9]*$//'
           )
-          echo "BRANCH_TAG=${BRANCH_TAG}" >> $GITHUB_ENV
           echo "branch_tag=${BRANCH_TAG}" >> $GITHUB_OUTPUT
           RAW_REPO=$(echo "${{ github.repository }}" | cut -d/ -f2)
-          echo "RAW_REPO=${RAW_REPO}" >> $GITHUB_ENV
           echo "rawrepo=${RAW_REPO}" >> $GITHUB_OUTPUT
           IMAGE="ghcr.io/${{ github.repository }}"
-          echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           REF="${{ github.head_ref || github.ref }}"
-          echo "REF=${REF}" >> $GITHUB_ENV
           echo "ref=${REF}" >> $GITHUB_OUTPUT
           SHA="${{ (github.event.pull_request && github.event.pull_request.head && github.event.pull_request.head.sha) || github.sha }}"
-          echo "SHA=${SHA}" >> $GITHUB_ENV
-          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT  
           SHORT_SHA=$( git rev-parse --short HEAD )
-          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
           echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
           VERSION=$( date -u '+%Y%m%d' )-${{ github.run_number || 0 }}-$( git rev-parse --short HEAD )
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: download artifacts
