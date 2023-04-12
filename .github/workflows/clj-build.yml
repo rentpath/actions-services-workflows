@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/'inputs.target_branch }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/${{ inputs.target_branch }}' }}
     steps:
       - name: remove 'ready' label
         if: github.event.pull_request && github.event.pull_request.number
