@@ -41,6 +41,8 @@ jobs:
         run: |
           echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
 
+      - name: compile build env
+        run: docker pull ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure
 
       ## ON PULL REQUEST
       - name: set timestamp
