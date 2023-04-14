@@ -1,4 +1,4 @@
-name: Clojure Build
+name: Clojure Build App
 on:
   workflow_call:
     inputs:
