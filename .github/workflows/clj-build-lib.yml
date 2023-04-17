@@ -41,14 +41,16 @@ jobs:
         run: |
           echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
 
-      - name: compile build env
-        run: docker pull ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure
 
       ## ON PULL REQUEST
       - name: set timestamp
         if: github.event.pull_request
         id: date
-        run: echo "date=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_OUTPUT
+        run: |
+          echo ${{ github.ref }}
+          echo ${{ github.event }}
+          
+          echo "date=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: build and deploy
         if: github.event.pull_request
