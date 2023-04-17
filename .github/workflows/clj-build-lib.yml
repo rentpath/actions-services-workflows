@@ -24,7 +24,7 @@ jobs:
       cancel-in-progress: ${{ github.ref != 'refs/heads/${{ inputs.target_branch }}' }}
     steps:
       - name: remove 'ready' label
-        if: github.event.pull_request && github.event.pull_request.number
+        if: ${{ github.event.pull_request && github.event.pull_request.number }}
         run: |
           curl -X DELETE \
                -H "Accept: application/vnd.github.v3+json" \
@@ -44,7 +44,7 @@ jobs:
 
       ## ON PULL REQUEST
       - name: set timestamp
-        if: github.event.pull_request
+        if: ${{ github.event.pull_request }}
         id: date
         run: |
           echo ${{ github.ref }}
@@ -53,7 +53,7 @@ jobs:
           echo "date=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: build and deploy
-        if: github.event.pull_request
+        if: ${{ github.event.pull_request }}
         run: |
           docker run \
           --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
@@ -70,7 +70,7 @@ jobs:
 
       ## ON PUSH TO MAIN/MASTER
 #      - name: build, bump version, and deploy
-#        if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
+#        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
 #        run: |
 #          docker run \
 #          --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
@@ -84,21 +84,21 @@ jobs:
 #          clj-release
 
 #      - name: push updates to github
-#        if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
+#        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
 #        uses: ad-m/github-push-action@master
 #        with:
 #          github_token: ${{ secrets.GH_RENTPATH_PLATENG_GPR_TRUE_SEARCH_PUSH_TOKEN }}
 #          branch: ${{ inputs.target_branch }}
 
       - name: set version vars
-        if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
         id: versioning
         run: |
           VTAG=$(cat RELEASE_VERSION)
           echo "vtag=${VTAG}" >> $GITHUB_OUTPUT
 
 #      - name: create release
-#        if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
+#        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
 #        id: create_release
 #        uses: softprops/action-gh-release@v1
 #        env:
