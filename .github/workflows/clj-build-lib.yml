@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/${{ inputs.target_branch }}' }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/${{ inputs.target_branch }}' }} #TODO: are we sure this format works?
     steps:
       - name: remove 'ready' label
         if: ${{ github.event.pull_request && github.event.pull_request.number }}
@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref || github.ref }}
-          token: ${{ github.token }} #${{ secrets.GH_RENTPATH_PLATENG_GPR_TRUE_SEARCH_PUSH_TOKEN }} ?
+          token: ${{ github.token }}
 
       - name: auth with docker
         run: |
@@ -47,9 +47,6 @@ jobs:
         if: ${{ github.event.pull_request }}
         id: date
         run: |
-          echo ${{ github.ref }}
-          echo ${{ github.event }}
-          
           echo "date=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: build and deploy
@@ -69,26 +66,26 @@ jobs:
 
 
       ## ON PUSH TO MAIN/MASTER
-#      - name: build, bump version, and deploy
-#        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
-#        run: |
-#          docker run \
-#          --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
-#          --env CLOJARS_PASSWORD='${{ secrets.NEXUS_PASSWORD }}' \
-#          --env CLOJARS_URL='https://nexus.tools.rent.com/repository/maven-releases/' \
-#          --env RUN_NUMBER='${{ github.run_number }}' \
-#          --env IS_MASTER='${{ contains(github.ref, 'refs/heads/main') }}' \
-#          ${{ inputs.docker_run_envs }} \
-#          --mount type=bind,source="$(pwd)",target=/build \
-#          ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure \
-#          clj-release
+      - name: build, bump version, and deploy
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
+        run: |
+          docker run \
+          --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
+          --env CLOJARS_PASSWORD='${{ secrets.NEXUS_PASSWORD }}' \
+          --env CLOJARS_URL='https://nexus.tools.rent.com/repository/maven-releases/' \
+          --env RUN_NUMBER='${{ github.run_number }}' \
+          --env IS_MASTER='${{ contains(github.ref, 'refs/heads/main') }}' \
+          ${{ inputs.docker_run_envs }} \
+          --mount type=bind,source="$(pwd)",target=/build \
+          ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure \
+          clj-release
 
-#      - name: push updates to github
-#        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
-#        uses: ad-m/github-push-action@master
-#        with:
-#          github_token: ${{ secrets.GH_RENTPATH_PLATENG_GPR_TRUE_SEARCH_PUSH_TOKEN }}
-#          branch: ${{ inputs.target_branch }}
+      - name: push updates to github
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ github.token }}
+          branch: ${{ inputs.target_branch }}
 
       - name: set version vars
         if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
@@ -97,15 +94,15 @@ jobs:
           VTAG=$(cat RELEASE_VERSION)
           echo "vtag=${VTAG}" >> $GITHUB_OUTPUT
 
-#      - name: create release
-#        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
-#        id: create_release
-#        uses: softprops/action-gh-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GH_RENTPATH_PLATENG_GPR_TRUE_SEARCH_PUSH_TOKEN }}
-#        with:
-#          tag_name: ${{ steps.versioning.outputs.vtag }}
-#          name: ${{ steps.versioning.outputs.vtag }}
-#          body: '${{ steps.versioning.outputs.vtag }}'
-#          draft: false
-#          prerelease: false
+      - name: create release
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ steps.versioning.outputs.vtag }}
+          name: ${{ steps.versioning.outputs.vtag }}
+          body: '${{ steps.versioning.outputs.vtag }}'
+          draft: false
+          prerelease: false
