@@ -21,7 +21,8 @@ jobs:
     runs-on: ${{ inputs.runner }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/${{ inputs.target_branch }}' }} #TODO: are we sure this format works?
+      # TODO: So the idea is that it should cancel non-main concurrent builds?
+      cancel-in-progress: ${{ github.ref != format('{0}{1}', 'refs/heads/', inputs.target_branch) }}
     steps:
       - name: remove 'ready' label
         if: ${{ github.event.pull_request && github.event.pull_request.number }}
@@ -58,7 +59,7 @@ jobs:
           --env CLOJARS_URL='https://nexus.tools.rent.com/repository/maven-snapshots/' \
           --env RUN_NUMBER='${{ github.run_number }}' \
           --env BUILD_TIMESTAMP='${{ steps.date.outputs.date }}' \
-          --env IS_MASTER='${{ contains(github.ref, 'refs/heads/${{ inputs.target_branch }}') }}' \
+          --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
           ${{ inputs.docker_run_envs }} \
           --mount type=bind,source="$(pwd)",target=/build \
           ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure \
@@ -74,7 +75,7 @@ jobs:
           --env CLOJARS_PASSWORD='${{ secrets.NEXUS_PASSWORD }}' \
           --env CLOJARS_URL='https://nexus.tools.rent.com/repository/maven-releases/' \
           --env RUN_NUMBER='${{ github.run_number }}' \
-          --env IS_MASTER='${{ contains(github.ref, 'refs/heads/main') }}' \
+          --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
           ${{ inputs.docker_run_envs }} \
           --mount type=bind,source="$(pwd)",target=/build \
           ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure \
