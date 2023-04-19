@@ -1,0 +1,107 @@
+name: Clojure Build Library
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: false
+        type: string
+        default: self-hosted
+      target_branch:
+        required: false
+        type: string
+        default: main
+      docker_run_envs:
+        required: false
+        type: string
+        description: Optional environment variables to pass to docker run command (formatted '--env <VAR_NAME>=<var_value> --env <VAR_NAME>=<var_value> ...')
+jobs:
+  build:
+    name: Build Library
+    runs-on: ${{ inputs.runner }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: remove 'ready' label
+        if: ${{ github.event.pull_request && github.event.pull_request.number }}
+        run: |
+          curl -X DELETE \
+               -H "Accept: application/vnd.github.v3+json" \
+               -H "Authorization: bearer ${{ github.token }}" \
+               "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels/PR%3A%20RE%20Ready"
+
+      - name: check out most recent commit
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          token: ${{ github.token }}
+
+      - name: auth with docker
+        run: |
+          echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
+
+
+      ## BUILD ON PULL REQUEST
+      - name: set timestamp
+        id: date
+        if: ${{ github.event.pull_request }}
+        run: |
+          echo "date=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: build and deploy
+        if: ${{ github.event.pull_request }}
+        run: |
+          docker run \
+          --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
+          --env CLOJARS_PASSWORD='${{ secrets.NEXUS_PASSWORD }}' \
+          --env CLOJARS_URL='https://nexus.tools.rent.com/repository/maven-snapshots/' \
+          --env RUN_NUMBER='${{ github.run_number }}' \
+          --env BUILD_TIMESTAMP='${{ steps.date.outputs.date }}' \
+          --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
+          ${{ inputs.docker_run_envs }} \
+          --mount type=bind,source="$(pwd)",target=/build \
+          ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure \
+          clj-build
+
+
+      ## RELEASE ON PUSH TO MAIN/MASTER
+      - name: build, bump version, and deploy
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
+        run: |
+          docker run \
+          --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
+          --env CLOJARS_PASSWORD='${{ secrets.NEXUS_PASSWORD }}' \
+          --env CLOJARS_URL='https://nexus.tools.rent.com/repository/maven-releases/' \
+          --env RUN_NUMBER='${{ github.run_number }}' \
+          --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
+          ${{ inputs.docker_run_envs }} \
+          --mount type=bind,source="$(pwd)",target=/build \
+          ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure \
+          clj-release
+
+      - name: push updates to github
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ github.token }}
+          branch: ${{ inputs.target_branch }}
+
+      - name: set version vars
+        id: versioning
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
+        run: |
+          VTAG=$(cat RELEASE_VERSION)
+          echo "vtag=${VTAG}" >> $GITHUB_OUTPUT
+
+      - name: create release
+        id: create_release
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ steps.versioning.outputs.vtag }}
+          name: ${{ steps.versioning.outputs.vtag }}
+          body: '${{ steps.versioning.outputs.vtag }}'
+          draft: false
+          prerelease: false

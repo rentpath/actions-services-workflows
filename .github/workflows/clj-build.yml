@@ -16,10 +16,10 @@ jobs:
     runs-on: ${{ inputs.runner }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/${{ inputs.target_branch }}' }}
+      cancel-in-progress: true
     steps:
       - name: remove 'ready' label
-        if: github.event.pull_request && github.event.pull_request.number
+        if: ${{ github.event.pull_request && github.event.pull_request.number }}
         run: |
           curl -X DELETE \
                -H "Accept: application/vnd.github.v3+json" \
@@ -94,7 +94,7 @@ jobs:
 
       - name: Add build tag check
         uses: LouisBrunner/checks-action@v1.6.0
-        if: github.event.pull_request
+        if: ${{ github.event.pull_request }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: |
@@ -102,7 +102,7 @@ jobs:
           conclusion: ${{ job.status }}
 
       - name: git tag
-        if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
         shell: bash {0}
         run: |
           git config --global user.email "idg@rentpath.com"
@@ -111,7 +111,7 @@ jobs:
             git push origin refs/tags/${{ steps.vars.outputs.version }}:refs/tags/${{ steps.vars.outputs.version }}
 
       - name: release
-        if: contains(github.ref, 'refs/heads/${{ inputs.target_branch }}')
+        if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
         id: create_release
         uses: softprops/action-gh-release@v1
         env:
