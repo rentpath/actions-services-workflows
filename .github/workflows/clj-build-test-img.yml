@@ -19,6 +19,10 @@ jobs:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ github.token }}
 
+      - name: auth with docker
+        run: |
+          echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
+
       - name: set variables
         id: vars
         run: |
