@@ -10,7 +10,7 @@ on:
         required: false
         type: string
         default: main
-      postman_test_file_path:
+      test_file_path:
         required: true
         type: string
 jobs:
@@ -37,7 +37,7 @@ jobs:
           --build-arg RP_PRIVATE_TOKEN=${{ secrets.GPR_TOKEN }} \
           --build-arg VERSION=${{ needs.build.outputs.version }} \
           --cache-from ${{ needs.build.outputs.image }}_tests:${{ needs.build.outputs.branch_tag }} \
-          -f ${{ inputs.postman_test_file_path }} .
+          -f ${{ inputs.test_file_path }} .
 
       - name: push test image to docker registry
         run: |
