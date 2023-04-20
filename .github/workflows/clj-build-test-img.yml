@@ -1,4 +1,4 @@
-name: Build and Push Test Image
+name: Clojure Build and Push Test Image
 on:
   workflow_call:
     inputs:
@@ -11,6 +11,7 @@ on:
         type: string
 jobs:
   test-image:
+    name: Build and Push Test Image
     runs-on: ${{ inputs.runner }}
     steps:
       - name: check out most recent commit
