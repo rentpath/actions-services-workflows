@@ -13,6 +13,12 @@ jobs:
   test-image:
     runs-on: ${{ inputs.runner }}
     steps:
+      - name: check out most recent commit
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          token: ${{ github.token }}
+
       - name: set variables
         id: vars
         run: |
