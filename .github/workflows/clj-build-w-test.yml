@@ -16,7 +16,7 @@ on:
 jobs:
   build:
     name: build
-    uses: ./.github/workflows/clj-build-lib.yml
+    uses: ./.github/workflows/clj-build.yml
     with:
       runner: ${{ inputs.runner }}
       target_branch: ${{ inputs.target_branch }}
