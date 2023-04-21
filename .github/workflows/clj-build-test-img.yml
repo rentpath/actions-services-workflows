@@ -1,0 +1,67 @@
+name: Clojure Build and Push Test Image
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: false
+        type: string
+        default: self-hosted
+      test_file_path:
+        required: true
+        type: string
+jobs:
+  test-image:
+    name: Build and Push Test Image
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: check out most recent commit
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          token: ${{ github.token }}
+
+      - name: auth with docker
+        run: |
+          echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
+
+      - name: set variables
+        id: vars
+        run: |
+          BRANCH_TAG=$(
+            echo "${{ github.head_ref || github.ref }}" \
+            | sed -E -e 's/refs\/heads\/(.*)/\1/g' \
+            | sed -e 's/[^a-zA-Z0-9]/-/g' \
+            | tr '[:upper:]' '[:lower:]' \
+            | cut -c 1-32 \
+            | sed -e 's/[^a-z0-9]*$//'
+          )
+          echo "branch_tag=${BRANCH_TAG}" >> $GITHUB_OUTPUT
+          IMAGE="ghcr.io/${{ github.repository }}"
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          SHA="${{ (github.event.pull_request && github.event.pull_request.head && github.event.pull_request.head.sha) || github.sha }}"
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          VERSION=$( date -u '+%Y%m%d' )-${{ github.run_number || 0 }}-$( git rev-parse --short HEAD )
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: build test image
+        run: |
+          docker build \
+          -t ${{ steps.vars.outputs.image }}_tests:${{ steps.vars.outputs.branch_tag }} \
+          -t ${{ steps.vars.outputs.image }}_tests:${{ steps.vars.outputs.version }} \
+          --build-arg BUILD_NUMBER=${{ github.run_number }} \
+          --build-arg BUILD_SHA=${{ steps.vars.outputs.sha }} \
+          --build-arg RP_PRIVATE_TOKEN=${{ secrets.GPR_TOKEN }} \
+          --build-arg VERSION=${{ steps.vars.outputs.version }} \
+          --cache-from ${{ steps.vars.outputs.image }}_tests:${{ steps.vars.outputs.branch_tag }} \
+          -f ${{ inputs.test_file_path }} .
+
+      - name: push test image to docker registry
+        run: |
+          docker push ${{ steps.vars.outputs.image }}_tests:${{ steps.vars.outputs.branch_tag }}
+          docker push ${{ steps.vars.outputs.image }}_tests:${{ steps.vars.outputs.version }}
+          # reserve the `latest` tag for the master branch
+          # branch-tags are essentially `latest` per branch
+          if [[ ${{ contains(github.ref, 'master') }} = true ]]; then
+            docker tag ${{ steps.vars.outputs.image }}_tests:${{ steps.vars.outputs.branch_tag }} ${{ steps.vars.outputs.image }}_tests:latest
+            docker push ${{ steps.vars.outputs.image }}_tests:latest
+          fi

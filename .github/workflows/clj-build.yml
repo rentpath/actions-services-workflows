@@ -32,7 +32,7 @@ jobs:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ github.token }}
 
-      - name: set other variables
+      - name: set variables
         id: vars
         run: |
           OWNER=$( echo ${{ github.repository }} | sed -E -e 's/\/.+$//' )
@@ -55,7 +55,7 @@ jobs:
           REF="${{ github.head_ref || github.ref }}"
           echo "ref=${REF}" >> $GITHUB_OUTPUT
           SHA="${{ (github.event.pull_request && github.event.pull_request.head && github.event.pull_request.head.sha) || github.sha }}"
-          echo "sha=${SHA}" >> $GITHUB_OUTPUT  
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
           SHORT_SHA=$( git rev-parse --short HEAD )
           echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
           VERSION=$( date -u '+%Y%m%d' )-${{ github.run_number || 0 }}-$( git rev-parse --short HEAD )
