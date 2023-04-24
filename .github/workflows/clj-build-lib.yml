@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref || github.ref }}
-          token: ${{ github.token }}
+          token: ${{ secrets.GH_RENTPATH_PLATENG_GPR_TRUE_SEARCH_PUSH_TOKEN }}
 
       - name: auth with docker
         run: |
