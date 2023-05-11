@@ -71,6 +71,7 @@ jobs:
       - name: build release image
         run: |
           docker build \
+            --pull \
             -t ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }} \
             -t ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }} \
             --build-arg BUILD_NUMBER=${{ github.run_number }} \
