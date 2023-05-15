@@ -89,9 +89,7 @@ jobs:
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
       - name: Check for circular dependencies between modules
-        # Set to 7 for now because of Phoenix. In the future we should consider
-        # bumping this down to 4
-        run: mix xref graph --format cycles --min-cycle-size 7 --fail-above 0
+        run: mix xref graph --format cycles --fail-above 0 --label compile-connected
   format:
     name: Mix Format
     needs: [dependencies]
