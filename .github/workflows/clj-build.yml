@@ -10,6 +10,10 @@ on:
         required: false
         type: string
         default: main
+      docker_build_args:
+        required: false
+        type: string
+        description: Optional build arguments to pass to docker build command (formatted '--build-arg <ARG_NAME>=<arg_value> --build-arg <ARG_NAME>=<arg_value> ...')
 jobs:
   build:
     name: Build App
@@ -77,6 +81,7 @@ jobs:
             --build-arg BUILD_SHA=${{ steps.vars.outputs.sha }} \
             --build-arg RP_PRIVATE_TOKEN=${{ secrets.GPR_TOKEN }} \
             --build-arg VERSION=${{ steps.vars.outputs.version }} \
+            ${{ inputs.docker_build_args }} \
             --cache-from ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }} \
             --target release \
             -f Dockerfile .
