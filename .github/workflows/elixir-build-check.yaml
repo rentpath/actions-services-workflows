@@ -21,6 +21,8 @@ jobs:
     name: Build and Cache Dependencies
     runs-on: ${{ inputs.runs-on }}
     container: ubuntu:latest
+    # env:
+    #   ImageOS: ubuntu22
     outputs:
       cache-key-suffix: ${{ steps.build-cache-deps.outputs.cache-key-suffix }}
     steps:
@@ -31,6 +33,8 @@ jobs:
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
           github-token: ${{ secrets.GHCR_USER_PAT }}
+        env:
+          ImageOS: ubuntu22
   credo:
     name: Credo
     needs: [dependencies]
