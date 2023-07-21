@@ -20,7 +20,7 @@ jobs:
   dependencies:
     name: Build and Cache Dependencies
     runs-on: ${{ inputs.runs-on }}
-    container: ubuntu:latest
+    container: ghcr.io/rentpath/github-actions-runner:latest
     # env:
     #   ImageOS: ubuntu22
     outputs:
