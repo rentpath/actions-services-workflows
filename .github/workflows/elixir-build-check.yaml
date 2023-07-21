@@ -20,7 +20,11 @@ jobs:
   dependencies:
     name: Build and Cache Dependencies
     runs-on: ${{ inputs.runs-on }}
-    container: ghcr.io/rentpath/github-actions-runner:latest
+    container:
+      image: ghcr.io/rentpath/github-actions-runner:latest
+      credentials:
+        username: rentpath-workflow-bot
+        password: ${{ secrets.GPR_TOKEN }}
     # env:
     #   ImageOS: ubuntu22
     outputs:
