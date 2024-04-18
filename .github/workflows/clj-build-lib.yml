@@ -96,7 +96,7 @@ jobs:
       - name: create release
         id: create_release
         if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GH_RENTPATH_PLATENG_GPR_TRUE_SEARCH_PUSH_TOKEN }}
         with:
