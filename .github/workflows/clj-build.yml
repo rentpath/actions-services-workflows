@@ -27,7 +27,7 @@ jobs:
                "https://api.github.com/repos/${{ github.repository}}/issues/${{ github.event.pull_request.number }}/labels/PR%3A%20RE%20Ready"
 
       - name: check out most recent commit
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ github.token }}
