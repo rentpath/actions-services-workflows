@@ -62,7 +62,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: auth with docker
         run: |
@@ -93,7 +93,7 @@ jobs:
           fi
 
       - name: Add build tag check
-        uses: LouisBrunner/checks-action@v1.6.0
+        uses: LouisBrunner/checks-action@v2.0.0
         if: ${{ github.event.pull_request }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
