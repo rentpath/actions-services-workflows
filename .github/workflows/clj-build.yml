@@ -27,7 +27,7 @@ jobs:
                "https://api.github.com/repos/${{ github.repository}}/issues/${{ github.event.pull_request.number }}/labels/PR%3A%20RE%20Ready"
 
       - name: check out most recent commit
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref || github.ref }}
           token: ${{ github.token }}
@@ -62,7 +62,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: auth with docker
         run: |
@@ -93,7 +93,7 @@ jobs:
           fi
 
       - name: Add build tag check
-        uses: LouisBrunner/checks-action@v1.6.0
+        uses: LouisBrunner/checks-action@v2.0.0
         if: ${{ github.event.pull_request }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -113,7 +113,7 @@ jobs:
       - name: release
         if: ${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
