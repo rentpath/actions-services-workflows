@@ -90,7 +90,7 @@ jobs:
           push: true
           cache-from: type=registry,ref=${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}
           cache-to: type=inline
-          tags: ${{ steps.vars.prepare.tags }}
+          tags: ${{ steps.prepare.outputs.tags }}
           secrets: |
             VAULT_TOKEN=${{ secrets.HASHICORP_VAULT_GH_READER_CI_TOKEN }}
             RP_PRIVATE_TOKEN=${{ secrets.GPR_TOKEN }}
