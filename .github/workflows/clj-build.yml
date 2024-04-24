@@ -68,29 +68,36 @@ jobs:
         run: |
           echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
 
-      - name: build release image
+      # FIXME: we should only tag `main` builds with the standard Rent. version
+      - name: prepare tags
+        id: prepare
         run: |
-          docker build \
-            -t ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }} \
-            -t ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }} \
-            --build-arg BUILD_NUMBER=${{ github.run_number }} \
-            --build-arg BUILD_SHA=${{ steps.vars.outputs.sha }} \
-            --build-arg RP_PRIVATE_TOKEN=${{ secrets.GPR_TOKEN }} \
-            --build-arg VERSION=${{ steps.vars.outputs.version }} \
-            --cache-from ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }} \
-            --target release \
-            -f Dockerfile .
-
-      - name: push to docker registry
-        run: |
-          docker push ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}
-          docker push ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }}
+          TAGS="${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }}"
           # reserve the `latest` tag for the target branch
           # branch-tags are essentially `latest` per branch
           if [[ ${{ contains(github.ref, inputs.target_branch) }} = true ]]; then
-            docker tag ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }} ${{ steps.vars.outputs.image }}:latest
-            docker push ${{ steps.vars.outputs.image }}:latest
+            TAGS="${TAGS},${{ steps.vars.outputs.image }}:latest"
+          else
+            TAGS="${TAGS},{{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}"
           fi
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+
+      # note that VAULT_TOKEN is expected to be inherited from org (calling action)-- double-check GHA docs
+      - uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          cache-from: type=registry,ref=${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}
+          cache-to: type=inline
+          tags: ${{ steps.vars.prepare.tags }}
+          secrets: |
+            VAULT_TOKEN=${{ secrets.HASHICORP_VAULT_GH_READER_CI_TOKEN }}
+            RP_PRIVATE_TOKEN=${{ inputs.GPR_TOKEN }}
+          build-args: |
+            BUILD_NUMBER=${{ github.run_number }}
+            BUILD_SHA=${{ steps.vars.outputs.sha }}
+            VERSION=${{ steps.vars.outputs.version }}
 
       - name: Add build tag check
         uses: LouisBrunner/checks-action@v2.0.0
