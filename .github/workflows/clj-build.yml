@@ -78,7 +78,7 @@ jobs:
           if [[ ${{ contains(github.ref, inputs.target_branch) }} = true ]]; then
             TAGS="${TAGS},${{ steps.vars.outputs.image }}:latest"
           else
-            TAGS="${TAGS},{{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}"
+            TAGS="${TAGS},${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}"
           fi
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
