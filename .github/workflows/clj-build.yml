@@ -93,7 +93,7 @@ jobs:
           tags: ${{ steps.vars.prepare.tags }}
           secrets: |
             VAULT_TOKEN=${{ secrets.HASHICORP_VAULT_GH_READER_CI_TOKEN }}
-            RP_PRIVATE_TOKEN=${{ inputs.GPR_TOKEN }}
+            RP_PRIVATE_TOKEN=${{ secrets.GPR_TOKEN }}
           build-args: |
             BUILD_NUMBER=${{ github.run_number }}
             BUILD_SHA=${{ steps.vars.outputs.sha }}
