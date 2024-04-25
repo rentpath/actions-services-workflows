@@ -83,7 +83,7 @@ jobs:
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
       # note that VAULT_TOKEN is expected to be inherited from org (calling action)-- double-check GHA docs
-      - uses: docker/build-push-action@v3
+      - uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile
