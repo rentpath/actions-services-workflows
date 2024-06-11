@@ -90,9 +90,15 @@ jobs:
     needs: [set-image-names, set-release-comment, set-version]
     runs-on: ${{ inputs.runs-on }}
     steps:
+      - name: get app token from rossum
+        id: rossum
+        uses: getsentry/action-github-app-token@v1
+        with:
+          app_id: ${{ secrets.ROSSUM_APP_ID }}
+          private_key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GHCR_USER_PAT }}
+          token: ${{ steps.rossum.outputs.token }}
       - name: Set /ops/version Build Information
         run: |
           build_info_path="${{ inputs.build-information-path }}"
