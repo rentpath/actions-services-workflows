@@ -24,35 +24,38 @@ jobs:
       cache-key-suffix: ${{ steps.build-cache-deps.outputs.cache-key-suffix }}
     steps:
       - id: build-cache-deps
-        uses: rentpath/actions-services-elixir-deps@v1
+        uses: rentpath/actions-services-elixir-deps@v1.6.4
         with:
+          app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
+          app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
-          github-token: ${{ secrets.GHCR_USER_PAT }}
   credo:
     name: Credo
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: rentpath/actions-services-elixir-deps@v1
+      - uses: rentpath/actions-services-elixir-deps@v1.6.4
         with:
+          app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
+          app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
-          github-token: ${{ secrets.GHCR_USER_PAT }}
       - run: mix do compile --force, credo --strict
   dialyzer:
     name: Dialyzer
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: rentpath/actions-services-elixir-deps@v1
+      - uses: rentpath/actions-services-elixir-deps@v1.6.4
         with:
+          app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
+          app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
-          github-token: ${{ secrets.GHCR_USER_PAT }}
       - name: Cache PLT files
         uses: actions/cache@v3
         with:
@@ -66,12 +69,13 @@ jobs:
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: rentpath/actions-services-elixir-deps@v1
+      - uses: rentpath/actions-services-elixir-deps@v1.6.4
         with:
+          app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
+          app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
-          github-token: ${{ secrets.GHCR_USER_PAT }}
       - name: Check for unused dependencies
         if: always()
         run: mix deps.unlock --check-unused
@@ -83,8 +87,10 @@ jobs:
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: rentpath/actions-services-elixir-deps@v1
+      - uses: rentpath/actions-services-elixir-deps@v1.6.4
         with:
+          app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
+          app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
@@ -100,8 +106,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Fetch dependencies as they may be needed by the formatter
-        uses: rentpath/actions-services-elixir-deps@v1
+        uses: rentpath/actions-services-elixir-deps@v1.6.4
         with:
+          app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
+          app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
