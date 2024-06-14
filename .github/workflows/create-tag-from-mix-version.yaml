@@ -34,6 +34,8 @@ jobs:
           fetch-depth: 0
       - uses: rentpath/actions-services-elixir-deps@v1
         with:
+          app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
+          app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
           elixir-version: ${{ inputs.elixir-version }}
           erlang-version: ${{ inputs.erlang-version }}
           skip-checkout: 'true'
