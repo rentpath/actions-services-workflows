@@ -54,7 +54,7 @@ jobs:
           docker run \
           --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
           --env CLOJARS_PASSWORD='${{ secrets.NEXUS_PASSWORD }}' \
-          --env CLOJARS_URL='https://nexus.tools.rent.com/repository/maven-snapshots/' \
+          --env CLOJARS_URL='https://nexus.tools.us-east-1.int.rent.com/repository/maven-snapshots/' \
           --env RUN_NUMBER='${{ github.run_number }}' \
           --env BUILD_TIMESTAMP='${{ steps.date.outputs.date }}' \
           --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
@@ -71,7 +71,7 @@ jobs:
           docker run \
           --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
           --env CLOJARS_PASSWORD='${{ secrets.NEXUS_PASSWORD }}' \
-          --env CLOJARS_URL='https://nexus.tools.rent.com/repository/maven-releases/' \
+          --env CLOJARS_URL='https://nexus.tools.us-east-1.int.rent.com/repository/maven-releases/' \
           --env RUN_NUMBER='${{ github.run_number }}' \
           --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
           ${{ inputs.docker_run_envs }} \
