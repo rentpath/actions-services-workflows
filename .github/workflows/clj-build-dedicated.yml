@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     name: Build App
-    runs-on: ${{ inputs.runner }}
+    runs-on:
       group: "build"
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
