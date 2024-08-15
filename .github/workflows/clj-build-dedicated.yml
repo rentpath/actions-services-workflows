@@ -51,7 +51,7 @@ jobs:
           echo "branch_tag=${BRANCH_TAG}" >> $GITHUB_OUTPUT
           RAW_REPO=$(echo "${{ github.repository }}" | cut -d/ -f2)
           echo "rawrepo=${RAW_REPO}" >> $GITHUB_OUTPUT
-          IMAGE="ghcr.io/${{ github.repository }}"
+          IMAGE="592888188557.dkr.ecr.us-east-1.amazonaws.com/ghcr-io/${{ github.repository }}"
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           REF="${{ github.head_ref || github.ref }}"
           echo "ref=${REF}" >> $GITHUB_OUTPUT
@@ -65,9 +65,9 @@ jobs:
       - name: download artifacts
         uses: actions/download-artifact@v4
 
-      - name: auth with docker
-        run: |
-          echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
+      # - name: auth with docker
+      #   run: |
+      #     echo ${{ secrets.GHCR_USER_PAT }} | docker login 592888188557.dkr.ecr.us-east-1.amazonaws.com -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
 
       # FIXME: we should only tag `main` builds with the standard Rent. version
       - name: prepare tags
