@@ -60,7 +60,7 @@ jobs:
           --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
           ${{ inputs.docker_run_envs }} \
           --mount type=bind,source="$(pwd)",target=/build \
-          ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure \
+          ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure17 \
           clj-build
 
 
@@ -76,7 +76,7 @@ jobs:
           --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
           ${{ inputs.docker_run_envs }} \
           --mount type=bind,source="$(pwd)",target=/build \
-          ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure \
+          ghcr.io/rentpath/rp_clojure:lib-builder-clj-secure17 \
           clj-release
 
       - name: push updates to github
