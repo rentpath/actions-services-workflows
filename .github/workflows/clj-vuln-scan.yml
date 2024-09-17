@@ -83,5 +83,5 @@ jobs:
         if: ${{ steps.watson-scan.outputs.REPORT_FAILED == 'true' }}
         uses: dkershner6/post-api-call-action@v2
         with:
-          url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          url: ${{ secrets.CLJ_VULN_WEBHOOK_URL }}
           data: ${{ steps.watson-json.outputs.REPORT_BODY }}
