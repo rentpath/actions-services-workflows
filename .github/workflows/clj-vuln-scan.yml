@@ -10,9 +10,6 @@ on:
         required: false
         type: string
         default: main
-      specified_ref:
-        required: false
-        type: string
       docker_run_envs:
         required: false
         type: string
@@ -22,13 +19,13 @@ jobs:
     name: Scan Dependencies
     runs-on: ${{ inputs.runner }}
     concurrency:
-      group: ${{ github.workflow }}-${{ github.event.inputs.specified_ref || github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: check out most recent commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.event.inputs.specified_ref || github.ref }}
+          ref: ${{ github.head_ref || github.ref }}
           token: ${{ secrets.GH_RENTPATH_PLATENG_GPR_TRUE_SEARCH_PUSH_TOKEN }}
 
       - name: auth with docker
