@@ -5,27 +5,27 @@ on:
       build-information-path:
         required: false
         type: string
-        default: 'BUILD-INFO.json'
+        default: "BUILD-INFO.json"
       deployment-image-docker-build-context:
         required: false
         type: string
-        default: '.'
+        default: "."
       deployment-image-docker-file-path:
         required: false
         type: string
-        default: 'Dockerfile'
+        default: "Dockerfile"
       deployment-image-name:
         required: false
         type: string
-        default: ''
+        default: ""
       deployment-test-image-docker-file-path:
         required: false
         type: string
-        default: ''
+        default: ""
       deployment-test-image-name:
         required: false
         type: string
-        default: ''
+        default: ""
       runs-on:
         required: false
         type: string
@@ -131,7 +131,7 @@ jobs:
           context: ${{ inputs.deployment-image-docker-build-context }}
           file: ${{ inputs.deployment-image-docker-file-path }}
           push: true
-          tags: ghcr.io/rentpath/${{ needs.set-image-names.outputs.name }}:${{ needs.set-version.outputs.version }}
+          tags: 592888188557.dkr.ecr.us-east-1.amazonaws.com/ghcr-io/rentpath/${{ needs.set-image-names.outputs.name }}:${{ needs.set-version.outputs.version }}
           secrets: |
             "github_token=${{ secrets.GHCR_USER_PAT }}"
       - name: Create GitHub Release
@@ -141,7 +141,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ needs.set-version.outputs.version }}
-          body: '${{ needs.set-release-comment.outputs.release-comment }}'
+          body: "${{ needs.set-release-comment.outputs.release-comment }}"
 
   deployment-test-image:
     name: Build and Push the Deployment Test Image
@@ -161,4 +161,4 @@ jobs:
           context: .
           file: ${{ inputs.deployment-test-image-docker-file-path }}
           push: true
-          tags: ghcr.io/rentpath/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}
+          tags: 592888188557.dkr.ecr.us-east-1.amazonaws.com/ghcr-io/rentpath/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}
