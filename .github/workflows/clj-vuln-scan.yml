@@ -1,0 +1,87 @@
+name: Clojure Vulnerability Scan
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: false
+        type: string
+        default: self-hosted
+      target_branch:
+        required: false
+        type: string
+        default: main
+      docker_run_envs:
+        required: false
+        type: string
+        description: Optional environment variables to pass to docker run command (formatted '--env <VAR_NAME>=<var_value> --env <VAR_NAME>=<var_value> ...')
+jobs:
+  scan:
+    name: Scan Dependencies
+    runs-on: ${{ inputs.runner }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: check out most recent commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          token: ${{ secrets.GH_RENTPATH_PLATENG_GPR_TRUE_SEARCH_PUSH_TOKEN }}
+
+      - name: auth with docker
+        run: |
+          echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
+
+      ## RUN SCAN AND CONDITIONALLY GENERATE ISSUE
+      - name: run scan
+        id: watson-scan
+        run: |
+          set +e
+          echo 'REPORT_BODY<<EOF' >> $GITHUB_OUTPUT
+          
+          docker run \
+          --env CLOJARS_USERNAME='${{ secrets.NEXUS_USERNAME }}' \
+          --env CLOJARS_PASSWORD='${{ secrets.NEXUS_PASSWORD }}' \
+          --env CLOJARS_URL='https://nexus.tools.us-east-1.int.rent.com/repository/maven-snapshots/' \
+          --env GITHUB_TOKEN='${{ secrets.GHCR_USER_PAT }}' \
+          --env RUN_NUMBER='${{ github.run_number }}' \
+          --env IS_MASTER='${{ contains(github.ref, format('{0}{1}', 'refs/heads/', inputs.target_branch)) }}' \
+          ${{ inputs.docker_run_envs }} \
+          --mount type=bind,source="$(pwd)",target=/build \
+          ghcr.io/rentpath/rp_clojure:vuln-scanner-clj-secure17 \
+          clj-vuln-scan >> $GITHUB_OUTPUT
+          
+          exitcode="$?"
+          
+          echo 'EOF' >> $GITHUB_OUTPUT
+          if [ $exitcode -ne 0 ]
+          then
+            echo 'REPORT_FAILED=true' >> $GITHUB_OUTPUT
+          fi
+
+      - name: clean report
+        id: watson-clean
+        if: ${{ steps.watson-scan.outputs.REPORT_FAILED == 'true' }}
+        run: |
+          echo 'REPORT_BODY<<EOF' >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo '${{ steps.watson-scan.outputs.REPORT_BODY }}' | awk '/Dependency Information/{p=1}p' >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      - name: generate json output
+        id: watson-json
+        if: ${{ steps.watson-scan.outputs.REPORT_FAILED == 'true' }}
+        run: |
+          echo 'REPORT_BODY<<EOF' >> $GITHUB_OUTPUT
+          echo '{"blocks": [{"type": "header", "text": {"type": "plain_text", "text": "${{github.repository}} Vulnerability Report"}},
+                {"type": "divider"}, {"type": "section", "text": {"type": "mrkdwn", "text": ${{toJSON(steps.watson-clean.outputs.REPORT_BODY)}}}}]}' >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      - name: Send custom JSON data to Slack workflow
+        id: slack
+        if: ${{ steps.watson-scan.outputs.REPORT_FAILED == 'true' }}
+        uses: dkershner6/post-api-call-action@v2
+        with:
+          url: ${{ secrets.CLJ_VULN_WEBHOOK_URL }}
+          data: ${{ steps.watson-json.outputs.REPORT_BODY }}
