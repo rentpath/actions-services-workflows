@@ -2,10 +2,10 @@ name: Clojure Vulnerability Scan
 on:
   workflow_call:
     inputs:
-      runner:
+      runner_group:
         required: false
         type: string
-        default: self-hosted
+        default: build
       target_branch:
         required: false
         type: string
@@ -17,7 +17,8 @@ on:
 jobs:
   scan:
     name: Scan Dependencies
-    runs-on: ${{ inputs.runner }}
+    runs-on:
+      group: ${{ inputs.runner_group }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
