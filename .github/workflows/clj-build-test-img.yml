@@ -2,17 +2,18 @@ name: Clojure Build and Push Test Image
 on:
   workflow_call:
     inputs:
-      runner:
+      runner_group:
         required: false
         type: string
-        default: self-hosted
+        default: build
       test_file_path:
         required: true
         type: string
 jobs:
   test-image:
     name: Build and Push Test Image
-    runs-on: ${{ inputs.runner }}
+    runs-on:
+      group: ${{ inputs.runner_group }}
     steps:
       - name: check out most recent commit
         uses: actions/checkout@v4

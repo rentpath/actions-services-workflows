@@ -2,10 +2,10 @@ name: Clojure Build
 on:
   workflow_call:
     inputs:
-      runner:
+      runner_group:
         required: false
         type: string
-        default: self-hosted
+        default: build
       target_branch:
         required: false
         type: string
@@ -14,7 +14,7 @@ jobs:
   build:
     name: Build App
     runs-on:
-      group: "build"
+      group: ${{ inputs.runner_group }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
