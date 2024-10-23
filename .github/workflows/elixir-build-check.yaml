@@ -57,7 +57,7 @@ jobs:
           erlang-version: ${{ inputs.erlang-version }}
           mix-env: ${{ inputs.mix-env }}
       - name: Cache PLT files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: cache-plt_${{ needs.dependencies.outputs.cache-key-suffix }}
           path: |
@@ -102,7 +102,7 @@ jobs:
     runs-on: ${{ inputs.runs-on }}
     steps:
       - name: Fetch the full repository so we can perform a Git diff
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Fetch dependencies as they may be needed by the formatter
