@@ -162,3 +162,5 @@ jobs:
           file: ${{ inputs.deployment-test-image-docker-file-path }}
           push: true
           tags: ghcr.io/rentpath/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}
+        env:
+          DOCKER_BUILD_SUMMARY: false
