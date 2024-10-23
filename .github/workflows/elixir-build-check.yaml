@@ -24,7 +24,7 @@ jobs:
       cache-key-suffix: ${{ steps.build-cache-deps.outputs.cache-key-suffix }}
     steps:
       - id: build-cache-deps
-        uses: rentpath/actions-services-elixir-deps@v1.6.4
+        uses: rentpath/actions-services-elixir-deps@v1
         with:
           app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
           app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
@@ -36,7 +36,7 @@ jobs:
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: rentpath/actions-services-elixir-deps@v1.6.4
+      - uses: rentpath/actions-services-elixir-deps@v1
         with:
           app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
           app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
@@ -49,7 +49,7 @@ jobs:
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: rentpath/actions-services-elixir-deps@v1.6.4
+      - uses: rentpath/actions-services-elixir-deps@v1
         with:
           app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
           app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
@@ -69,7 +69,7 @@ jobs:
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: rentpath/actions-services-elixir-deps@v1.6.4
+      - uses: rentpath/actions-services-elixir-deps@v1
         with:
           app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
           app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
@@ -87,7 +87,7 @@ jobs:
     needs: [dependencies]
     runs-on: ${{ inputs.runs-on }}
     steps:
-      - uses: rentpath/actions-services-elixir-deps@v1.6.4
+      - uses: rentpath/actions-services-elixir-deps@v1
         with:
           app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
           app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
@@ -106,7 +106,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Fetch dependencies as they may be needed by the formatter
-        uses: rentpath/actions-services-elixir-deps@v1.6.4
+        uses: rentpath/actions-services-elixir-deps@v1
         with:
           app-installation-id: ${{ secrets.ROSSUM_APP_ID }}
           app-installation-key: ${{ secrets.ROSSUM_PRIVATE_KEY }}
