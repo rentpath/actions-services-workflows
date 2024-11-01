@@ -17,7 +17,8 @@ on:
 jobs:
   build:
     name: Build Library
-    runs-on: ${{ inputs.runner }}
+    runs-on:
+      group: "build"
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
