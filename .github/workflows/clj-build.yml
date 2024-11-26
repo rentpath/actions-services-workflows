@@ -10,6 +10,10 @@ on:
         required: false
         type: string
         default: main
+      context:
+        required: false
+        type: string
+        default: "."
 jobs:
   build:
     name: Build App
@@ -86,7 +90,7 @@ jobs:
       # note that VAULT_TOKEN is expected to be inherited from org (calling action)-- double-check GHA docs
       - uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ inputs.context }}
           file: Dockerfile
           push: true
           cache-from: type=registry,ref=${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}
