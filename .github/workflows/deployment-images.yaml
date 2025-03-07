@@ -42,6 +42,10 @@ on:
         required: true
       GHCR_USER_PAT:
         required: true
+      ROSSUM_APP_ID:
+        required: true
+      ROSSUM_PRIVATE_KEY:
+        required: true 
 
 jobs:
   set-image-names:
