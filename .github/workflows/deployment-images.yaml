@@ -56,7 +56,7 @@ jobs:
     steps:
       - id: set-deployment-image-name
         run: |
-          name=$([[ "${{ inputs.deployment-image-name }}" != "" ]] && echo ${{ inputs.deployment-image-name }} || echo ${{ github.repository }} | cut -f2 -d/)
+          name=$([[ "${{ inputs.deployment-image-name }}" != "" ]] && echo ${{ inputs.deployment-image-name }} || echo ${{ github.repository }})
           echo "name=$name" >> $GITHUB_OUTPUT
       - id: set-deployment-test-image-name
         run: |
@@ -83,9 +83,9 @@ jobs:
     steps:
       - id: set-release-comment
         run: |
-          repo=${{ needs.set-image-names.outputs.name }}
+          repo=${{ github.event.repository.name }}
           text="ghcr.io/${{ github.repository }}:${{ needs.set-version.outputs.version }}"
-          link="https://github.com/orgs/rentpath/packages/container/package/${repo}"
+          link="https://github.com/orgs/${{ github.repository_owner }}/packages/container/package/${{ github.event.repository.name }}"
           comment="Docker Image: [$text]($link)"
           echo "release-comment=$comment" >> $GITHUB_OUTPUT
 
@@ -135,13 +135,13 @@ jobs:
           context: ${{ inputs.deployment-image-docker-build-context }}
           file: ${{ inputs.deployment-image-docker-file-path }}
           push: true
-          tags: ghcr.io/rentpath/${{ needs.set-image-names.outputs.name }}:${{ needs.set-version.outputs.version }}
+          tags: ghcr.io/${{ needs.set-image-names.outputs.name }}:${{ needs.set-version.outputs.version }}
           secrets: |
             "github_token=${{ secrets.GHCR_USER_PAT }}"
         env:
           DOCKER_BUILD_SUMMARY: false
       - name: Create GitHub Release
-        if: github.repository == format('rentpath/{0}', needs.set-image-names.outputs.name)
+        if: github.repository == needs.set-image-names.outputs.name
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -167,6 +167,6 @@ jobs:
           context: .
           file: ${{ inputs.deployment-test-image-docker-file-path }}
           push: true
-          tags: ghcr.io/rentpath/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}
+          tags: ghcr.io/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}
         env:
           DOCKER_BUILD_SUMMARY: false
