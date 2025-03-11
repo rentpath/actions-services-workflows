@@ -42,10 +42,14 @@ on:
         required: true
       GHCR_USER_PAT:
         required: true
+      RENT_CORP_GHCR_USER_NAME:
+        required: true
+      RENT_CORP_GHCR_USER_PAT:
+        required: true
       ROSSUM_APP_ID:
         required: true
       ROSSUM_PRIVATE_KEY:
-        required: true 
+        required: true
 
 jobs:
   set-image-names:
@@ -124,22 +128,37 @@ jobs:
           EOF
           fi
 
-      - name: Login to GHCR
+      - name: login to rentpath GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USER_NAME }}
           password: ${{ secrets.GHCR_USER_PAT }}
-      - uses: docker/build-push-action@v6
+      - name: push image to rentpath docker registry
+        uses: docker/build-push-action@v6
         with:
           context: ${{ inputs.deployment-image-docker-build-context }}
           file: ${{ inputs.deployment-image-docker-file-path }}
+          load: true
           push: true
           tags: ghcr.io/${{ needs.set-image-names.outputs.name }}:${{ needs.set-version.outputs.version }}
           secrets: |
             "github_token=${{ secrets.GHCR_USER_PAT }}"
         env:
           DOCKER_BUILD_SUMMARY: false
+      - name: login to rent-corp GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.RENT_CORP_GHCR_USER_NAME }}
+          password: ${{ secrets.RENT_CORP_GHCR_USER_PAT }}
+      - name: push image to rent-corp docker registry
+        run: |
+          REPO=$(echo ${{ needs.set-image-names.outputs.name }} | cut -f2 -d/)
+          RENTPATH_TAG="ghcr.io/${{ needs.set-image-names.outputs.name }}:${{ needs.set-version.outputs.version }}"
+          RENTCORP_TAG="ghcr.io/rent-corp/${REPO}:${{ needs.set-version.outputs.version }}
+          docker tag $RENTPATH_TAG $RENTCORP_TAG
+          docker push $RENTCORP_TAG
       - name: Create GitHub Release
         if: github.repository == needs.set-image-names.outputs.name
         uses: softprops/action-gh-release@v2
