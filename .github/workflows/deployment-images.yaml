@@ -158,7 +158,7 @@ jobs:
         run: |
           REPO=$(echo ${{ needs.set-image-names.outputs.name }} | cut -f2 -d/)
           RENTPATH_TAG="ghcr.io/${{ needs.set-image-names.outputs.name }}:${{ needs.set-version.outputs.version }}"
-          RENTCORP_TAG="ghcr.io/rent-corp/${REPO}:${{ needs.set-version.outputs.version }}
+          RENTCORP_TAG="ghcr.io/rent-corp/${REPO}:${{ needs.set-version.outputs.version }}"
           docker tag $RENTPATH_TAG $RENTCORP_TAG
           docker push $RENTCORP_TAG
       - name: Create GitHub Release
@@ -202,6 +202,6 @@ jobs:
         run: |
           REPO=$(echo ${{ needs.set-image-names.outputs.name }} | cut -f2 -d/)
           RENTPATH_TAG="ghcr.io/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}"
-          RENTCORP_TAG="ghcr.io/rent-corp/${REPO}:${{ needs.set-version.outputs.version }}
+          RENTCORP_TAG="ghcr.io/rent-corp/${REPO}:${{ needs.set-version.outputs.version }}"
           docker tag $RENTPATH_TAG $RENTCORP_TAG
           docker push $RENTCORP_TAG
