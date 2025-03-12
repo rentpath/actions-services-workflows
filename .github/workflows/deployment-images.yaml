@@ -200,7 +200,7 @@ jobs:
           password: ${{ secrets.RENT_CORP_GHCR_USER_PAT }}
       - name: push test image to rent-corp docker registry
         run: |
-          REPO=$(echo ${{ needs.set-image-names.outputs.name }} | cut -f2 -d/)
+          REPO=$(echo ${{ needs.set-image-names.outputs.test-name }} | cut -f2 -d/)
           RENTPATH_TAG="ghcr.io/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}"
           RENTCORP_TAG="ghcr.io/rent-corp/${REPO}:${{ needs.set-version.outputs.version }}"
           docker tag $RENTPATH_TAG $RENTCORP_TAG
