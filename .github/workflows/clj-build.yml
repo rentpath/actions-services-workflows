@@ -57,6 +57,8 @@ jobs:
           echo "rawrepo=${RAW_REPO}" >> $GITHUB_OUTPUT
           IMAGE="ghcr.io/${{ github.repository }}"
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          RENTCORP_IMAGE="ghcr.io/rent-corp/$RAW_REPO"
+          echo "rentcorp_image=${RENTCORP_IMAGE}" >> $GITHUB_OUTPUT
           REF="${{ github.head_ref || github.ref }}"
           echo "ref=${REF}" >> $GITHUB_OUTPUT
           SHA="${{ (github.event.pull_request && github.event.pull_request.head && github.event.pull_request.head.sha) || github.sha }}"
@@ -73,15 +75,23 @@ jobs:
       - name: prepare tags
         id: prepare
         run: |
-          TAGS="${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }}"
+          FIRST_TAG="${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }}"
+          TAGS="${FIRST_TAG}"
+          RENTCORP_TAGS="${{ steps.vars.outputs.rentcorp_image }}:${{ steps.vars.outputs.version }}"
           # reserve the `latest` tag for the target branch
           # branch-tags are essentially `latest` per branch
           if [[ ${{ contains(github.ref, inputs.target_branch) }} = true ]]; then
             TAGS="${TAGS},${{ steps.vars.outputs.image }}:latest"
+            RENTCORP_TAGS="${RENTCORP_TAGS},${{ steps.vars.outputs.rentcorp_image }}:latest"
           else
             TAGS="${TAGS},${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}"
+            RENTCORP_TAGS="${RENTCORP_TAGS},${{ steps.vars.outputs.rentcorp_image }}:${{ steps.vars.outputs.branch_tag }}"
           fi
+          ALL_TAGS="${TAGS},${RENTCORP_TAGS}"
+          echo "first_tag=${FIRST_TAG}"
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "rentcorp_tags=${RENTCORP_TAGS}" >> $GITHUB_OUTPUT
+          echo "all_tags=${ALL_TAGS}" >> $GITHUB_OUTPUT
 
       - name: auth with rentpath ghcr
         run: |
@@ -108,9 +118,12 @@ jobs:
         run: |
           echo ${{ secrets.RENT_CORP_GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.RENT_CORP_GHCR_USER_NAME }} --password-stdin
 
-      - name: push to ghcr
+      - name: add rentcorp tags and push to ghcr
         run: |
-          docker push ${{ steps.vars.outputs.image }} --all-tags
+          for tag in $(echo ${{ steps.prepare.outputs.rentcorp_tags }} | sed 's/,/ /g' | xargs); do
+            docker tag ${{ steps.prepare.outputs.first_tag }} $tag
+            docker push $tag
+          done
 
       - name: Add build tag check
         uses: LouisBrunner/checks-action@v2.0.0
