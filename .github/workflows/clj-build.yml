@@ -69,10 +69,6 @@ jobs:
       - name: download artifacts
         uses: actions/download-artifact@v4
 
-      - name: auth with docker
-        run: |
-          echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
-
       # FIXME: we should only tag `main` builds with the standard Rent. version
       - name: prepare tags
         id: prepare
@@ -86,6 +82,10 @@ jobs:
             TAGS="${TAGS},${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.branch_tag }}"
           fi
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+
+      - name: auth with rentpath ghcr
+        run: |
+          echo ${{ secrets.GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER_NAME }} --password-stdin
 
       # note that VAULT_TOKEN is expected to be inherited from org (calling action)-- double-check GHA docs
       - uses: docker/build-push-action@v5
@@ -103,6 +103,14 @@ jobs:
             BUILD_NUMBER=${{ github.run_number }}
             BUILD_SHA=${{ steps.vars.outputs.sha }}
             VERSION=${{ steps.vars.outputs.version }}
+
+      - name: auth with rent-corp ghcr
+        run: |
+          echo ${{ secrets.RENT_CORP_GHCR_USER_PAT }} | docker login ghcr.io -u ${{ secrets.RENT_CORP_GHCR_USER_NAME }} --password-stdin
+
+      - name: push to ghcr
+        run: |
+          docker push ${{ steps.vars.outputs.image }} --all-tags
 
       - name: Add build tag check
         uses: LouisBrunner/checks-action@v2.0.0
