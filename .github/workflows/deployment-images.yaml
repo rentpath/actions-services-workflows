@@ -15,6 +15,7 @@ on:
         type: string
         default: 'Dockerfile'
       deployment-image-name:
+        description: "Must match format of `{{REGISTRY}}/{{IMAGE}}`"
         required: false
         type: string
         default: ''
@@ -23,6 +24,7 @@ on:
         type: string
         default: ''
       deployment-test-image-name:
+        description: "Must match format of `{{REGISTRY}}/{{IMAGE}}`"
         required: false
         type: string
         default: ''
@@ -64,7 +66,7 @@ jobs:
           echo "name=$name" >> $GITHUB_OUTPUT
       - id: set-deployment-test-image-name
         run: |
-          test_name=$([[ "${{ inputs.deployment-test-image-name }}" != "" ]] && echo ${{ inputs.deployment-test-image-name }} || echo ${{ github.repository }}_tests | cut -f2 -d/)
+          test_name=$([[ "${{ inputs.deployment-test-image-name }}" != "" ]] && echo ${{ inputs.deployment-test-image-name }} || echo ${{ github.repository }}_tests)
           echo "test-name=$test_name" >> $GITHUB_OUTPUT
 
   set-version:
@@ -185,7 +187,21 @@ jobs:
         with:
           context: .
           file: ${{ inputs.deployment-test-image-docker-file-path }}
+          load: true
           push: true
           tags: ghcr.io/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}
         env:
           DOCKER_BUILD_SUMMARY: false
+      - name: login to rent-corp GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.RENT_CORP_GHCR_USER_NAME }}
+          password: ${{ secrets.RENT_CORP_GHCR_USER_PAT }}
+      - name: push test image to rent-corp docker registry
+        run: |
+          REPO=$(echo ${{ needs.set-image-names.outputs.name }} | cut -f2 -d/)
+          RENTPATH_TAG="ghcr.io/${{ needs.set-image-names.outputs.test-name }}:${{ needs.set-version.outputs.version }}"
+          RENTCORP_TAG="ghcr.io/rent-corp/${REPO}:${{ needs.set-version.outputs.version }}
+          docker tag $RENTPATH_TAG $RENTCORP_TAG
+          docker push $RENTCORP_TAG
